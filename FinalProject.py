@@ -48,7 +48,17 @@ def get_music_data(music):
     else:
         # print(f"Error: {response.status_code} {response.reason}")
         return None
-    
+
+def cache_music_data(songs, filename):
+    cache_content = load_json(filename)
+    successes = 0
+    total_music = len(songs)
+
+    for song in songs:
+        song_detail = get_music_data(song)
+        if song_detail != None:
+            response_details, requested_url = get_music_data(song)
+            if requested_url not in list(cache)
 
 
     
@@ -76,3 +86,4 @@ def main():
     # DO NOT CHANGE THIS 
     #######################################
     print(get_music_data("passionfruit-104"))
+    print(cache_music)
