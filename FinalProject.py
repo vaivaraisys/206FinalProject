@@ -62,15 +62,9 @@ def get_meal_data(area):
 
     
 def cache_meal_data(areas):
-    cache_content = load_json(areas)
-
-    for area in areas:
-        meal_detail = get_meal_data(area)
-        if meal_detail != None:
-            response_details, requested_url = get_meal_data(area)
-            if requested_url not in list(cache_content.keys()):
-                cache_content[requested_url] = response_details
-        json_content = write_json(cache_content, "area_meals.json")
+    # cache_content = load_json(areas)
+    meal_detail = get_meal_data(areas)
+    json_content = write_json(meal_detail, "area_meals.json")
 
 def set_up_database(db_name):
     """
