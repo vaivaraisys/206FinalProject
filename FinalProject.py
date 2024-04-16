@@ -2,6 +2,8 @@ import requests
 import json
 import unittest
 import os
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 
 API_KEY = 'f0cf7dff'
 
@@ -21,7 +23,7 @@ def write_json(dict, filename):
     except:
         print("error opening or converting json file")
         
-def get_music_data(music):
+def get_music_data(song):
     '''
     creates API request
     ARGUMENTS: 
@@ -32,10 +34,8 @@ def get_music_data(music):
         request was unsuccesful
     '''
 
-    
-    # new_music = music.replace(" ", "+")
-    url = f"https://gaana.com/song/{music}"
-    # url = "https://gaana.com/song/passion"
+
+    url = ""
 
     response = requests.get(url)
     print(response)
@@ -48,17 +48,7 @@ def get_music_data(music):
     else:
         # print(f"Error: {response.status_code} {response.reason}")
         return None
-
-def cache_music_data(songs, filename):
-    cache_content = load_json(filename)
-    successes = 0
-    total_music = len(songs)
-
-    for song in songs:
-        song_detail = get_music_data(song)
-        if song_detail != None:
-            response_details, requested_url = get_music_data(song)
-            if requested_url not in list(cache)
+    
 
 
     
@@ -75,10 +65,10 @@ def main():
     # this code loads in the list of movies and 
     # removes whitespace for you!
     with open('/Users/vaivaraisys/Desktop/SI206/206FinalProject/songdata.txt', 'r') as f: 
-        music = f.readlines()
+        songs = f.readlines()
         
-    for i in range(len(music)): 
-        music[i] = music[i].strip()
+    for i in range(len(songs)): 
+        songs[i] = songs[i].strip()
     
     # resp = 
     # print(resp)
@@ -86,4 +76,3 @@ def main():
     # DO NOT CHANGE THIS 
     #######################################
     print(get_music_data("passionfruit-104"))
-    print(cache_music)
