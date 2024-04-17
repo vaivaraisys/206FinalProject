@@ -3,8 +3,10 @@ import json
 import unittest
 import os
 import sqlite3
+import random
+import string
 
-
+# do not think we need this
 def load_json(filename):
     try:    
         with open(filename, "r") as fh:
@@ -12,7 +14,7 @@ def load_json(filename):
             return data_content
     except:
         return {}
-
+# do not think we need this
 def write_json(dict, filename):
     try:
         with open(filename, 'w') as file:
@@ -20,7 +22,12 @@ def write_json(dict, filename):
         print(f"JSON data has been successfully written to {filename}.")
     except:
         print("error opening or converting json file")
-        
+
+
+# create a function that uses beautiful soup to get area names to loop through in the function below here for meals
+
+
+# gets the meal name and id        
 def get_meal_data(area):
     '''
     creates API request
@@ -55,17 +62,12 @@ def get_meal_data(area):
             # print(meal_id)
             meal_info = (meal_name, meal_id)
             name_id_list.append(meal_info)
-    # print(name_id_list)
+    print(name_id_list)
         # for meal_detail in meal_details:
             # print(meal_detail)
     return (response_dict, name_id_list, url)
 
-    
-def cache_meal_data(areas):
-    # cache_content = load_json(areas)
-    meal_detail = get_meal_data(areas)
-    json_content = write_json(meal_detail, "area_meals.json")
-
+# Sets up the data base 
 def set_up_database(db_name):
     """
     Sets up a SQLite database connection and cursor.
@@ -85,38 +87,90 @@ def set_up_database(db_name):
     cur = conn.cursor()
     return cur, conn
 
+# sets up meal data table ****(NOT WORKING)*****
+def set_up_types_table(meal_tuple, cur, conn):
+    type_list = []
+    for pokemon in data:
+        pokemon_type = pokemon["type"][0]
+        if pokemon_type not in type_list:
+            type_list.append(pokemon_type)
+        if len(pokemon["type"]) > 1:
+            pokemon_type = pokemon["type"][1]
+            if pokemon_type not in type_list:
+                type_list.append(pokemon_type)
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS Types (id INTEGER PRIMARY KEY, type TEXT UNIQUE)"
+    )
+    for i in range(len(type_list)):
+        cur.execute(
+            "INSERT OR IGNORE INTO Types (id,type) VALUES (?,?)", (i,
+                                                                   type_list[i])
+        )
+    conn.commit()
 
-def get_drink_data(drink):
 
-    url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?s={drink}"
+#Getting drinks id and instructions on how to make the drink
+def get_drink_data():
+    randomLetter = random.choice(string.ascii_letters)
+    print(randomLetter)
+    url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?f={randomLetter}"
 
     response = requests.get(url)
     print(response)
 
     if response.status_code == 200:
         response_dict = json.loads(response.text)
-        # if response_dict["Response"] == "False":
-        #     return None
-        return (response_dict, url)
+        # print(response_dict)
     else:
         # print(f"Error: {response.status_code} {response.reason}")
         return None
-    
-def cache_drink_data(drinks):
-    cache_content = load_json(drinks)
-    successes = 0
-    total_meal = len(drinks)
 
-    for meal in drinks:
-        meal_detail = get_drink_data(meal)
-        if meal_detail != None:
-            response_details, requested_url = get_drink_data(meal)
-            if requested_url not in list(cache_content.keys()):
-                successes += 1
-                cache_content[requested_url] = response_details
-    if successes > 0:
-        write_json(cache_content, drinks)
-    
+    name_id_list = []
+    for drink, drink_details in response_dict.items():
+        # print(meal_details) 
+        for drink_data in drink_details:
+            # print(meal_data)  
+            drink_instructions = drink_data["strInstructions"]
+            # print(meal_name)   
+            drink_id = drink_data["idDrink"]   
+            # print(meal_id)
+            drink_info = (drink_id, drink_instructions)
+            name_id_list.append(drink_info)
+    print(name_id_list)
+        # for meal_detail in meal_details:
+            # print(meal_detail)
+    return (response_dict, name_id_list, url)
+
+
+
+# set up table for drinks ****(NOT WORKING)****
+def set_up_types_table(drink_tuple, cur, conn):
+    type_list = []
+    for pokemon in data:
+        pokemon_type = pokemon["type"][0]
+        if pokemon_type not in type_list:
+            type_list.append(pokemon_type)
+        if len(pokemon["type"]) > 1:
+            pokemon_type = pokemon["type"][1]
+            if pokemon_type not in type_list:
+                type_list.append(pokemon_type)
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS Types (id INTEGER PRIMARY KEY, type TEXT UNIQUE)"
+    )
+    for i in range(len(type_list)):
+        cur.execute(
+            "INSERT OR IGNORE INTO Types (id,type) VALUES (?,?)", (i,
+                                                                   type_list[i])
+        )
+    conn.commit()    
+
+
+# create a function that makes some sort of calculation
+
+
+# create a function that makes some sort of visual
+
+
 def main():
     '''
     Note that your cache file will be called 
@@ -133,6 +187,7 @@ def main():
     # DO NOT CHANGE THIS 
     #######################################
     meal_dict = get_meal_data("Canadian")
+    drink_dict = get_drink_data()
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
     # print(cache_meal_data(meals, "songdata.txt"))
