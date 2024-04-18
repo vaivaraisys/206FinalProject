@@ -26,17 +26,50 @@ def write_json(dict, filename):
 
 
 # create a function that uses beautiful soup to get area names to loop through in the function below here for meals
-def retrieve_desserts(html_file):
+def retrieve_desserts(html_file1, html_file2, html_file3):
     all_desserts = [] 
-    with open(html_file, 'r', encoding="utf-8-sig") as file:
+    with open(html_file1, 'r', encoding="utf-8-sig") as file:
+        html_content = file.read()
+        # print(html_content)
+    soup = BeautifulSoup(html_content, "html.parser")
+    for name in soup.find_all("div", class_="item-name"):
+        dessert_name = name.text.strip()
+        # print(dessert_name)
+    for rank in soup.find_all("div", class_="item-rank"):
+        dessert_rank = rank.text.strip()
+        dessert_tuple = (dessert_name, dessert_rank)
+        all_desserts.append(dessert_tuple)
+
+
+
+    with open(html_file2, 'r', encoding="utf-8-sig") as file:
         html_content = file.read()
         # print(html_content)
     soup = BeautifulSoup(html_content, "html.parser")
     for dessert_item in soup.find_all("div", class_="item-name"):
         dessert_name = dessert_item.text.strip()
+    for dessert_item in soup.find_all("div", class_="item-rank"):
+        dessert_rank = dessert_item.text.strip()
         # print(dessert_name)
-        all_desserts.append(dessert_name)
-    print(len(all_desserts))
+        dessert_tuple = (dessert_name, dessert_rank)
+        all_desserts.append(dessert_tuple)
+
+
+
+    with open(html_file3, 'r', encoding="utf-8-sig") as file:
+        html_content = file.read()
+        # print(html_content)
+    soup = BeautifulSoup(html_content, "html.parser")
+    for dessert_item in soup.find_all("div", class_="item-name"):
+        dessert_name = dessert_item.text.strip()
+    for dessert_item in soup.find_all("div", class_="item-rank"):
+        dessert_rank = dessert_item.text.strip()
+        # print(dessert_name)
+        dessert_tuple = (dessert_name, dessert_rank)
+        all_desserts.append(dessert_tuple)
+
+
+    # print(all_desserts)
     return all_desserts
 
 # def retrieve_countries(html_file):
@@ -228,7 +261,7 @@ def main():
     #######################################
     meal_dict = get_meal_data()
     drink_dict = get_drink_data()
-    desserts = retrieve_desserts("DessertsAtoZ.html")
+    desserts = retrieve_desserts("DessertsAtoZ1.html", "DessertsAtoZ2.html", "DessertsAtoZ3.html")
     # country_names = retrieve_countries("AlphabeticalCountries.html")
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
