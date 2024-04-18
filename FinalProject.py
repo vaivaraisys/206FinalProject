@@ -26,24 +26,37 @@ def write_json(dict, filename):
 
 
 # create a function that uses beautiful soup to get area names to loop through in the function below here for meals
-def retrieve_countries(html_file):
-    all_countries = [] 
+def retrieve_desserts(html_file):
+    all_desserts = [] 
     with open(html_file, 'r', encoding="utf-8-sig") as file:
         html_content = file.read()
         # print(html_content)
     soup = BeautifulSoup(html_content, "html.parser")
-    for country_item in soup.find_all("table", class_="table table-hover table-condensed"):
-        # print(country_item)
-        country_name = country_item.text
-        country_name = country_name.split()
-        # print(country_name)
-        for country in country_name:
-            if country == "Area" or country == "and":
-                continue
-            if country.isalpha():
-                all_countries.append(country)
-    print(all_countries)            
-    return all_countries
+    for dessert_item in soup.find_all("div", class_="item-name"):
+        dessert_name = dessert_item.text.strip()
+        # print(dessert_name)
+        all_desserts.append(dessert_name)
+    print(len(all_desserts))
+    return all_desserts
+
+# def retrieve_countries(html_file):
+#     all_countries = [] 
+#     with open(html_file, 'r', encoding="utf-8-sig") as file:
+#         html_content = file.read()
+#         # print(html_content)
+#     soup = BeautifulSoup(html_content, "html.parser")
+#     for country_item in soup.find_all("table", class_="table table-hover table-condensed"):
+#         # print(country_item)
+#         country_name = country_item.text
+#         country_name = country_name.split()
+#         # print(country_name)
+#         for country in country_name:
+#             if country == "Area" or country == "and":
+#                 continue
+#             if country.isalpha():
+#                 all_countries.append(country)
+#     # print(all_countries)            
+#     return all_countries
 
 # gets the meal name and id        
 def get_meal_data():
@@ -56,34 +69,36 @@ def get_meal_data():
         tuple with the response text and url OR None if the 
         request was unsuccesful
     '''
-    country_list = retrieve_countries("AlphabeticalCountries.html")
-    for country in country_list:
-        url = f"https://www.themealdb.com/api/json/v1/1/filter.php?a={country}"
+    # country_list = retrieve_countries("AlphabeticalCountries.html")
+    # for country in country_list:
+    randomLetter = random.choice(string.ascii_letters)
+    # print(randomLetter)
+    url = f"https://www.themealdb.com/api/json/v1/1/search.php?f={randomLetter}"
 
-        response = requests.get(url)
-        # print(response)
+    response = requests.get(url)
+    # print(response)
 
-        if response.status_code == 200:
-            response_dict = json.loads(response.text)
-            # print(response_dict)
-                # if response_dict["Response"] == "False":
-                #     return None
-        else:
+    if response.status_code == 200:
+        response_dict = json.loads(response.text)
+        # print(response_dict)
+            # if response_dict["Response"] == "False":
+            #     return None
+    # else:
+    #     pass
+    name_id_list = []
+    for meal, meal_details in response_dict.items():
+        if meal_details == None:
             continue
-        name_id_list = []
-        for meal, meal_details in response_dict.items():
-            if meal_details == None:
-                continue
-            # print(meal_details) 
-            else:
-                for meal_data in meal_details:
-                    # print(meal_data)  
-                    meal_name = meal_data["strMeal"]
-                    # print(meal_name)   
-                    meal_id = meal_data["idMeal"]   
-                    # print(meal_id)
-                    meal_info = (meal_name, meal_id)
-                    name_id_list.append(meal_info)
+        # print(meal_details) 
+        else:
+            for meal_data in meal_details:
+                # print(meal_data)  
+                meal_name = meal_data["strMeal"]
+                # print(meal_name)   
+                meal_id = meal_data["idMeal"]   
+                # print(meal_id)
+                meal_info = (meal_name, meal_id)
+                name_id_list.append(meal_info)
     # print(name_id_list)
     return name_id_list
     # print(name_id_list)
@@ -213,6 +228,7 @@ def main():
     #######################################
     meal_dict = get_meal_data()
     drink_dict = get_drink_data()
+    desserts = retrieve_desserts("DessertsAtoZ.html")
     # country_names = retrieve_countries("AlphabeticalCountries.html")
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
