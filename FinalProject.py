@@ -5,6 +5,7 @@ import os
 import sqlite3
 import random
 import string
+from bs4 import BeautifulSoup 
 
 # do not think we need this
 def load_json(filename):
@@ -25,10 +26,27 @@ def write_json(dict, filename):
 
 
 # create a function that uses beautiful soup to get area names to loop through in the function below here for meals
-
+def retrieve_countries(html_file):
+    all_countries = [] 
+    with open(html_file, 'r', encoding="utf-8-sig") as file:
+        html_content = file.read()
+        # print(html_content)
+    soup = BeautifulSoup(html_content, "html.parser")
+    for country_item in soup.find_all("table", class_="table table-hover table-condensed"):
+        # print(country_item)
+        country_name = country_item.text
+        country_name = country_name.split()
+        # print(country_name)
+        for country in country_name:
+            if country == "Area" or country == "and":
+                continue
+            if country.isalpha():
+                all_countries.append(country)
+    print(all_countries)            
+    return all_countries
 
 # gets the meal name and id        
-def get_meal_data(area):
+def get_meal_data():
     '''
     creates API request
     ARGUMENTS: 
@@ -38,34 +56,40 @@ def get_meal_data(area):
         tuple with the response text and url OR None if the 
         request was unsuccesful
     '''
+    country_list = retrieve_countries("AlphabeticalCountries.html")
+    for country in country_list:
+        url = f"https://www.themealdb.com/api/json/v1/1/filter.php?a={country}"
 
+        response = requests.get(url)
+        # print(response)
 
-    url = f"https://www.themealdb.com/api/json/v1/1/filter.php?a={area}"
-
-    response = requests.get(url)
-    print(response)
-
-    if response.status_code == 200:
-        response_dict = json.loads(response.text)
-        # if response_dict["Response"] == "False":
-        #     return None
-    else:
-        return None
-    name_id_list = []
-    for meal, meal_details in response_dict.items():
-        # print(meal_details) 
-        for meal_data in meal_details:
-            # print(meal_data)  
-            meal_name = meal_data["strMeal"]
-            # print(meal_name)   
-            meal_id = meal_data["idMeal"]   
-            # print(meal_id)
-            meal_info = (meal_name, meal_id)
-            name_id_list.append(meal_info)
-    print(name_id_list)
+        if response.status_code == 200:
+            response_dict = json.loads(response.text)
+            # print(response_dict)
+                # if response_dict["Response"] == "False":
+                #     return None
+        else:
+            continue
+        name_id_list = []
+        for meal, meal_details in response_dict.items():
+            if meal_details == None:
+                continue
+            # print(meal_details) 
+            else:
+                for meal_data in meal_details:
+                    # print(meal_data)  
+                    meal_name = meal_data["strMeal"]
+                    # print(meal_name)   
+                    meal_id = meal_data["idMeal"]   
+                    # print(meal_id)
+                    meal_info = (meal_name, meal_id)
+                    name_id_list.append(meal_info)
+    # print(name_id_list)
+    return name_id_list
+    # print(name_id_list)
         # for meal_detail in meal_details:
             # print(meal_detail)
-    return (response_dict, name_id_list, url)
+    # return (response_dict, name_id_list, url)
 
 # Sets up the data base 
 def set_up_database(db_name):
@@ -90,6 +114,7 @@ def set_up_database(db_name):
 # sets up meal data table ****(NOT WORKING)*****
 def set_up_types_table(meal_tuple, cur, conn):
     type_list = []
+
     for pokemon in data:
         pokemon_type = pokemon["type"][0]
         if pokemon_type not in type_list:
@@ -112,7 +137,7 @@ def set_up_types_table(meal_tuple, cur, conn):
 #Getting drinks id and instructions on how to make the drink
 def get_drink_data():
     randomLetter = random.choice(string.ascii_letters)
-    print(randomLetter)
+    # print(randomLetter)
     url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?f={randomLetter}"
 
     response = requests.get(url)
@@ -136,7 +161,7 @@ def get_drink_data():
             # print(meal_id)
             drink_info = (drink_id, drink_instructions)
             name_id_list.append(drink_info)
-    print(name_id_list)
+    # print(name_id_list)
         # for meal_detail in meal_details:
             # print(meal_detail)
     return (response_dict, name_id_list, url)
@@ -186,8 +211,9 @@ def main():
         
     # DO NOT CHANGE THIS 
     #######################################
-    meal_dict = get_meal_data("Canadian")
+    meal_dict = get_meal_data()
     drink_dict = get_drink_data()
+    # country_names = retrieve_countries("AlphabeticalCountries.html")
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
     # print(cache_meal_data(meals, "songdata.txt"))
