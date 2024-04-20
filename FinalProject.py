@@ -70,10 +70,13 @@ def get_meal_data():
             # for meal_detail in meal_details:
                 # print(meal_detail)
         # return (response_dict, name_id_list, url)
+
+
+
 def generate_number_letter_tuples():
     # Create a list of tuples containing numbers and corresponding letters
     number_letter_tuples = [(i, chr(i + 96)) for i in range(1, 27)]
-    print(number_letter_tuples)
+    # print(number_letter_tuples)
     return number_letter_tuples
 
 # Sets up the data base 
@@ -97,25 +100,29 @@ def set_up_database(db_name):
     return cur, conn
 
 # sets up meal data table ****(NOT WORKING)*****
-def set_up_types_table(meal_tuple, cur, conn):
-    type_list = []
-
-    for pokemon in data:
-        pokemon_type = pokemon["type"][0]
-        if pokemon_type not in type_list:
-            type_list.append(pokemon_type)
-        if len(pokemon["type"]) > 1:
-            pokemon_type = pokemon["type"][1]
-            if pokemon_type not in type_list:
-                type_list.append(pokemon_type)
+def set_up_meal_table(meal_tuple, cur, conn):
+    integer_key_mapping = {}
+    number_letter_tuples = generate_number_letter_tuples()
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS Types (id INTEGER PRIMARY KEY, type TEXT UNIQUE)"
-    )
-    for i in range(len(type_list)):
-        cur.execute(
-            "INSERT OR IGNORE INTO Types (id,type) VALUES (?,?)", (i,
-                                                                   type_list[i])
+        "DROP TABLE IF EXISTS meals"
         )
+
+    cur.execute(
+        "CREATE TABLE meals (Integer_Key INTEGER, Starting_Letter TEXT, Meal TEXT UNIQUE, Meal_ID INTEGER)"
+        )
+    
+    for (meal, meal_id) in meal_tuple:
+        starting_letter = meal[0].lower() 
+        if starting_letter not in integer_key_mapping:
+        # Get the corresponding integer key for the starting letter
+            integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
+            integer_key_mapping[starting_letter] = integer_key
+        cur.execute("INSERT OR IGNORE INTO meals (Integer_Key, Starting_Letter, Meal, Meal_ID) VALUES (?, ?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal, meal_id))
+    # print(meal_tuple)
+    # for (integer_key, starting_letter), (meal, meal_id) in zip(number_letter_tuples, meal_tuple):
+    #     if starting_letter not in integer_key_mapping:
+    #         integer_key_mapping[starting_letter] = integer_key
+    #     cur.execute("INSERT OR IGNORE INTO meals (Integer_Key, Starting_Letter, Meal, Meal_ID) VALUES (?, ?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal, meal_id))
     conn.commit()
 
 
@@ -187,10 +194,12 @@ def main():
         
     # DO NOT CHANGE THIS 
     #######################################
-    # meal_dict = get_meal_data()
+    meal_dict = get_meal_data()
     # drink_dict = get_drink_data()
     # desserts = retrieve_desserts()
     num_letter_list = generate_number_letter_tuples()
+    cur, conn = set_up_database("food_data.db")
+    meal_table = set_up_meal_table(meal_dict, cur, conn)
     # country_names = retrieve_countries("AlphabeticalCountries.html")
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
