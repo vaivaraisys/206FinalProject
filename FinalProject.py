@@ -70,6 +70,11 @@ def get_meal_data():
             # for meal_detail in meal_details:
                 # print(meal_detail)
         # return (response_dict, name_id_list, url)
+def generate_number_letter_tuples():
+    # Create a list of tuples containing numbers and corresponding letters
+    number_letter_tuples = [(i, chr(i + 96)) for i in range(1, 27)]
+    print(number_letter_tuples)
+    return number_letter_tuples
 
 # Sets up the data base 
 def set_up_database(db_name):
@@ -133,27 +138,6 @@ def get_drink_data():
                     drink_id = drink_data["idDrink"]
                     drink_info = (drink_instructions, drink_id)
                     name_id_list.append(drink_info)
-        # if response.status_code == 200:
-        #     response_dict = json.loads(response.text)
-        #     # print(response_dict)
-        # else:
-        #     # print(f"Error: {response.status_code} {response.reason}")
-        #     return None
-
-        # name_id_list = []
-        # for drink, drink_details in response_dict.items():
-        #     # print(meal_details) 
-        #     for drink_data in drink_details:
-        #         # print(meal_data)  
-        #         drink_instructions = drink_data["strInstructions"]
-        #         # print(meal_name)   
-        #         drink_id = drink_data["idDrink"]   
-        #         # print(meal_id)
-        #         drink_info = (drink_id, drink_instructions)
-        #         name_id_list.append(drink_info)
-        # print(name_id_list)
-            # for meal_detail in meal_details:
-                # print(meal_detail)
     print(name_id_list)
     return name_id_list
     # return (response_dict, name_id_list, url)
@@ -203,9 +187,10 @@ def main():
         
     # DO NOT CHANGE THIS 
     #######################################
-    meal_dict = get_meal_data()
-    drink_dict = get_drink_data()
-    desserts = retrieve_desserts()
+    # meal_dict = get_meal_data()
+    # drink_dict = get_drink_data()
+    # desserts = retrieve_desserts()
+    num_letter_list = generate_number_letter_tuples()
     # country_names = retrieve_countries("AlphabeticalCountries.html")
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
