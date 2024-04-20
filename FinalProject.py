@@ -102,6 +102,7 @@ def set_up_database(db_name):
 # sets up meal data table ****(NOT WORKING)*****
 def set_up_meal_table(meal_tuple, cur, conn):
     integer_key_mapping = {}
+    counter = 0
     number_letter_tuples = generate_number_letter_tuples()
     cur.execute(
         "DROP TABLE IF EXISTS meals"
@@ -118,11 +119,15 @@ def set_up_meal_table(meal_tuple, cur, conn):
             integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
             integer_key_mapping[starting_letter] = integer_key
         cur.execute("INSERT OR IGNORE INTO meals (Integer_Key, Starting_Letter, Meal, Meal_ID) VALUES (?, ?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal, meal_id))
-    # print(meal_tuple)
-    # for (integer_key, starting_letter), (meal, meal_id) in zip(number_letter_tuples, meal_tuple):
-    #     if starting_letter not in integer_key_mapping:
-    #         integer_key_mapping[starting_letter] = integer_key
-    #     cur.execute("INSERT OR IGNORE INTO meals (Integer_Key, Starting_Letter, Meal, Meal_ID) VALUES (?, ?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal, meal_id))
+
+        counter += 1
+        if counter == 25:
+            conn.commit()
+            counter = 0  # Reset the counter for the next batch
+
+    # Commit any remaining data
+    if counter > 0:
+        conn.commit()
     conn.commit()
 
 
