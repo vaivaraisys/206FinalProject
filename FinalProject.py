@@ -38,24 +38,20 @@ def retrieve_desserts():
         for name in name_list:
             dessert_name = name.text
             dessert_titles.append(dessert_name)
-        print(len(dessert_titles))
+        #print(len(dessert_titles))
         return dessert_titles
     else:
         print("Invalid URL")
      
 def get_meal_data():
-    '''
-    creates API request
-    ARGUMENTS: 
-        title: title of the movie you're searching for 
-
-    RETURNS: 
-        tuple with the response text and url OR None if the 
-        request was unsuccesful
-    '''
-    randomLetter = random.choice(string.ascii_letters)
+    # randomLetter = random.choice(string.ascii_letters)
     # print(randomLetter)
-    url = f"https://www.themealdb.com/api/json/v1/1/search.php?f={randomLetter}"
+    name_id_list = []
+    alphabet = [chr(i) for i in range(65, 91)]
+    for letter in alphabet:
+        # print(letter)
+
+        url = f"https://www.themealdb.com/api/json/v1/1/search.php?f={letter}"
 
     response = requests.get(url)
     # print(response)
@@ -71,7 +67,7 @@ def get_meal_data():
     for meal, meal_details in response_dict.items():
         if meal_details == None:
             continue
-            #print(meal_details) 
+        # print(meal_details) 
         else:
             for meal_data in meal_details:
                 # print(meal_data)  
@@ -83,10 +79,18 @@ def get_meal_data():
                 name_id_list.append(meal_info)
     # print(name_id_list)
     return name_id_list
-    #print(name_id_list)
+    # print(name_id_list)
         # for meal_detail in meal_details:
-            #print(meal_detail)
+            # print(meal_detail)
     # return (response_dict, name_id_list, url)
+
+#add in a key that has a unique id just 1-100, could break it by indexing the dictionary, i + 25 break
+
+def generate_number_letter_tuples():
+    # Create a list of tuples containing numbers and corresponding letters
+    number_letter_tuples = [(i, chr(i + 96)) for i in range(1, 27)]
+    # print(number_letter_tuples)
+    return number_letter_tuples
 
 # Sets up the data base 
 def set_up_database(db_name):
@@ -109,33 +113,44 @@ def set_up_database(db_name):
     return cur, conn
 
 # sets up meal data table ****(NOT WORKING)*****
-def set_up_types_table(meal_tuple, cur, conn):
-    type_list = []
-
-    for pokemon in data:
-        pokemon_type = pokemon["type"][0]
-        if pokemon_type not in type_list:
-            type_list.append(pokemon_type)
-        if len(pokemon["type"]) > 1:
-            pokemon_type = pokemon["type"][1]
-            if pokemon_type not in type_list:
-                type_list.append(pokemon_type)
+def set_up_meal_table(meal_tuple, cur, conn):
+    integer_key_mapping = {}
+    counter = 0
+    number_letter_tuples = generate_number_letter_tuples()
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS Types (id INTEGER PRIMARY KEY, type TEXT UNIQUE)"
-    )
-    for i in range(len(type_list)):
-        cur.execute(
-            "INSERT OR IGNORE INTO Types (id,type) VALUES (?,?)", (i,
-                                                                   type_list[i])
+        "DROP TABLE IF EXISTS meals"
         )
+
+    cur.execute(
+        "CREATE TABLE meals (Integer_Key INTEGER, Starting_Letter TEXT, Meal TEXT UNIQUE, Meal_ID INTEGER)"
+        )
+    
+    for (meal, meal_id) in meal_tuple:
+        starting_letter = meal[0].lower() 
+        if starting_letter not in integer_key_mapping:
+        # Get the corresponding integer key for the starting letter
+            integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
+            integer_key_mapping[starting_letter] = integer_key
+        cur.execute("INSERT OR IGNORE INTO meals (Integer_Key, Starting_Letter, Meal, Meal_ID) VALUES (?, ?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal, meal_id))
+
+        counter += 1
+        if counter == 25:
+            conn.commit()
+            counter = 0  # Reset the counter for the next batch
+
+    # Commit any remaining data
+    if counter > 0:
+        conn.commit()
     conn.commit()
 
 
 #Getting drinks id and instructions on how to make the drink
 def get_drink_data():
-    randomLetter = random.choice(string.ascii_letters)
-    # print(randomLetter)
-    url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?f={randomLetter}"
+    alphabet = [chr(i) for i in range(65, 91)]
+    name_id_list = []
+
+    for letter in alphabet:
+        url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?f={letter}"
 
     response = requests.get(url)
     print(response)
@@ -158,33 +173,43 @@ def get_drink_data():
             # print(meal_id)
             drink_info = (drink_id, drink_instructions)
             name_id_list.append(drink_info)
-    print(name_id_list)
+    # print(name_id_list)
         # for meal_detail in meal_details:
             # print(meal_detail)
     return (response_dict, name_id_list, url)
 
-
+#same thing: create i variable/counter/accumulator that calls the next 25 after breaking
 
 # set up table for drinks ****(NOT WORKING)****
-def set_up_types_table(drink_tuple, cur, conn):
-    type_list = []
-    for pokemon in data:
-        pokemon_type = pokemon["type"][0]
-        if pokemon_type not in type_list:
-            type_list.append(pokemon_type)
-        if len(pokemon["type"]) > 1:
-            pokemon_type = pokemon["type"][1]
-            if pokemon_type not in type_list:
-                type_list.append(pokemon_type)
+def set_up_drink_table(drink_tuple, cur, conn):
+    integer_key_mapping = {}
+    counter = 0
+    number_letter_tuples = generate_number_letter_tuples()
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS Types (id INTEGER PRIMARY KEY, type TEXT UNIQUE)"
-    )
-    for i in range(len(type_list)):
-        cur.execute(
-            "INSERT OR IGNORE INTO Types (id,type) VALUES (?,?)", (i,
-                                                                   type_list[i])
+        "DROP TABLE IF EXISTS meals"
         )
-    conn.commit()    
+
+    cur.execute(
+        "CREATE TABLE meals (Integer_Key INTEGER, Starting_Letter TEXT, Meal TEXT UNIQUE, Drink_ID INTEGER)"
+        )
+    
+    for (drink_instructions, drink_id) in drink_tuple:
+        starting_letter = drink_instructions[0].lower() 
+        if starting_letter not in integer_key_mapping:
+        # Get the corresponding integer key for the starting letter
+            integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
+            integer_key_mapping[starting_letter] = integer_key
+        cur.execute("INSERT OR IGNORE INTO meals (Integer_Key, Starting_Letter, Drink_Instructions, Drink_ID) VALUES (?, ?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal, meal_id))
+
+        counter += 1
+        if counter == 25:
+            conn.commit()
+            counter = 0  # Reset the counter for the next batch
+
+    # Commit any remaining data
+    if counter > 0:
+        conn.commit()
+    conn.commit()
 
 
 # create a function that makes some sort of calculation
@@ -208,9 +233,12 @@ def main():
         
     # DO NOT CHANGE THIS 
     #######################################
-    # meal_dict = get_meal_data()
+    meal_dict = get_meal_data()
     # drink_dict = get_drink_data()
-    desserts = retrieve_desserts()
+    # desserts = retrieve_desserts()
+    num_letter_list = generate_number_letter_tuples()
+    cur, conn = set_up_database("food_data.db")
+    meal_table = set_up_meal_table(meal_dict, cur, conn)
     # country_names = retrieve_countries("AlphabeticalCountries.html")
     # print(meal_dict)
     # cached_meal_data = cache_meal_data()
