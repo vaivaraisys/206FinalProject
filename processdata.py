@@ -20,12 +20,13 @@ def meal_dessert_data(cur, conn):
     # print(meal_dessert_data)
     return meal_dessert_data
 
-def calculate_most_letter_meals(meal_dessert_data):
+def calculate_most_letter_meals(meal_dessert_tuple):
     # cur.execute("SELECT Starting_Letter, COUNT(*) AS Meal_Count FROM meal_names GROUP BY Starting_Letter ORDER BY Meal_Count DESC LIMIT 1")
     # most_common_letter = cur.fetchone()
     # print(most_common_letter)
     letter_count = {}
-    for dessert, meal in meal_dessert_data:
+    # print(meal_dessert_tuple)
+    for dessert, meal in meal_dessert_tuple:
         dessert_letter = dessert[0].lower()
         meal_letter = meal[0].lower()
         
@@ -38,14 +39,25 @@ def calculate_most_letter_meals(meal_dessert_data):
             letter_count[meal_letter] += 1
         else:
             letter_count[meal_letter] = 1
-    
+    sorted_letter_dict = dict(sorted(letter_count.items(), key=lambda item:item[1], reverse=True))
     most_common_letter = max(letter_count, key=letter_count.get)
     # print(most_common_letter)
-    return most_common_letter
+    # print(sorted_letter_dict)
+    return sorted_letter_dict
+
+def write_csv_file(file, sorted_meal_dict):
+    with open(file, "w") as fh:
+        for key, value in sorted(sorted_meal_dict.items(), key=lambda item: item[1], reverse=True):
+            file.write(f"{key}: {value}\n")
+        highest_count = next(iter(sorted_meal_dict.values()))
+
+    file.write(f"\nHighest letter count: {highest_count}\n")
+        
 
 def main(): 
     cur, conn = set_up_database("food_data.db")
-    meal_dessert_data(cur, conn)
-    calculate_most_letter_meals(meal_dessert_data)
+    meal_dessert_tuple = meal_dessert_data(cur, conn)
+    sorted_meal_dict = calculate_most_letter_meals(meal_dessert_tuple)
+    write_file = write_csv_file("file_calulation.txt", sorted_meal_dict)
 main()
     
