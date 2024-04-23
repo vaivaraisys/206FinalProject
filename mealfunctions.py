@@ -75,6 +75,20 @@ def set_up_database(db_name):
     cur = conn.cursor()
     return cur, conn
 
+def set_up_integer_table(cur, conn, num_letter_tup):
+    cur.execute(
+        "DROP TABLE IF EXISTS Integer_Letter"
+    )
+    cur.execute(
+        "CREATE TABLE integer_letter (Integer_Key INTEGER, Letter TEXT)"
+        )
+        # print(num_letter_tup)
+    for number, letter in num_letter_tup:
+        cur.execute(
+            "INSERT INTO integer_letter (Integer_Key, Letter) VALUES (?, ?)", (number, letter)
+            )
+    conn.commit()
+
 
 def set_up_meal_table(meal_dict, cur, conn, max_items=25):
     number_letter_tuples = generate_number_letter_tuples()
@@ -118,11 +132,12 @@ def set_up_meal_table(meal_dict, cur, conn, max_items=25):
 
 def main():
     # meal_dict = get_meal_data()
-    # generate_number_letter_tuples()
+    num_letter_tup = generate_number_letter_tuples()
     # cur, conn = set_up_database("food_data.db")
     # set_up_meal_table(meal_dict, cur, conn)
     meal_dict = get_meal_data()
     generate_number_letter_tuples()
     cur, conn = set_up_database("food_data.db")
     set_up_meal_table(meal_dict, cur, conn, max_items=25)
+    set_up_integer_table(cur, conn, num_letter_tup)
 main()
