@@ -47,7 +47,7 @@ def meal_bar_graph():
     letters = list(meal_count.keys())
     counts = list(meal_count.values())
 
-    plt.bar(letters, counts)
+    plt.bar(letters, counts, color="red")
     
     plt.xlabel('Starting Letter')
     plt.ylabel('Number of Meals')
@@ -87,7 +87,7 @@ def desserts_bar_graph():
     letters = list(letter_count.keys())
     counts = list(letter_count.values())
 
-    plt.bar(letters, counts)
+    plt.bar(letters, counts, color="red")
     
     plt.xlabel('Starting Letter')
     plt.ylabel('Number of Dessserts')
@@ -99,10 +99,10 @@ def desserts_bar_graph():
 
 
 def main():
-    # meal_pie_chart()
+    meal_pie_chart()
     # meal_bar_graph()
     # desserts_pie_chart()
-    desserts_bar_graph()
+    # desserts_bar_graph()
 main()
 
 
