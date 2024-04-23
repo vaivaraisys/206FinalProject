@@ -75,73 +75,46 @@ def set_up_database(db_name):
     cur = conn.cursor()
     return cur, conn
 
-# sets up meal data table 
+
 def set_up_meal_table(meal_dict, cur, conn, max_items=25):
-    # # print(meal_dict)
-    # integer_key_mapping = {}
-    # # counter = 0
-    # number_letter_tuples = generate_number_letter_tuples()
-    # cur.execute(
-    #     "DROP TABLE IF EXISTS meal_names"
-    #     )
-    # cur.execute(
-    #     "DROP TABLE IF EXISTS meal_ids"
-    #     )
-
-    # cur.execute(
-    #     "CREATE TABLE meal_names (Integer_Key INTEGER, Starting_Letter TEXT, Meal_name TEXT UNIQUE)"
-    #     )
-    # cur.execute(
-    #     "CREATE TABLE meal_ids (Integer_Key INTEGER, Starting_Letter TEXT, Meal_id TEXT UNIQUE)"
-    #     )
-    
-    # for (meal, meal_id) in meal_dict:
-    #     starting_letter = meal[0].lower() 
-    #     if starting_letter not in integer_key_mapping:
-    #         integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
-    #         integer_key_mapping[starting_letter] = integer_key
-    #     cur.execute("INSERT OR IGNORE INTO meal_names (Integer_Key, Starting_Letter, Meal_name) VALUES (?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal))
-    #     cur.execute("INSERT OR IGNORE INTO meal_ids (Integer_Key, Starting_Letter, Meal_id) VALUES (?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal_id))
-
-    # conn.commit()
-
-    integer_key_mapping = {}
-    # counter = 0
     number_letter_tuples = generate_number_letter_tuples()
-    cur.execute(
-        "CREATE TABLE IF NOT EXISTS meal_names (Integer_Key INTEGER, Starting_Letter TEXT, Meal_name TEXT UNIQUE)"
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='meal_names'")
+    table_exists = cur.fetchone() is not None
+
+    if not table_exists:
+        cur.execute(
+            "CREATE TABLE meal_names (Integer_Key INTEGER, Starting_Letter TEXT, Meal_name TEXT UNIQUE)"
         )
-    cur.execute(
-        "CREATE TABLE IF NOT EXISTS meal_ids (Integer_Key INTEGER, Starting_Letter TEXT, Meal_id TEXT UNIQUE)"
+        cur.execute(
+            "CREATE TABLE meal_ids (Integer_Key INTEGER, Starting_Letter TEXT, Meal_id TEXT UNIQUE)"
         )
-    cur.execute(
-        "SELECT COUNT (*) FROM meal_names"
-    )
-    idx = cur.fetchall()
-    idx = idx[0][0]
+        conn.commit()
+
+    cur.execute("SELECT COUNT(*) FROM meal_names")
+    current_count = cur.fetchone()[0]
 
     cur.execute("SELECT Meal_name FROM meal_names")
     existing_meal_names = set(row[0] for row in cur.fetchall())
-    
+
     cur.execute("SELECT Meal_id FROM meal_ids")
     existing_meal_ids = set(row[0] for row in cur.fetchall())
-    
-    for i in range(idx, idx + 25):
-        for meal, meal_id in meal_dict:
-            if meal not in existing_meal_names and meal_id not in existing_meal_ids:
-                starting_letter = meal[0].lower() 
-                if starting_letter not in integer_key_mapping:
-                    integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
-                    integer_key_mapping[starting_letter] = integer_key
-                cur.execute("INSERT OR IGNORE INTO meal_names (Integer_Key, Starting_Letter, Meal_name) VALUES (?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal))
 
-                cur.execute("INSERT OR IGNORE INTO meal_ids (Integer_Key, Starting_Letter, Meal_id) VALUES (?, ?, ?)", (integer_key_mapping[starting_letter], starting_letter, meal_id))
+    num_to_insert = min(max_items, len(meal_dict) - current_count)
 
-                existing_meal_names.add(meal)
-                existing_meal_ids.add(meal_id)
-    
+    data_to_insert = []
+    for meal, meal_id in meal_dict[current_count:current_count + num_to_insert]:
+        if meal not in existing_meal_names and meal_id not in existing_meal_ids:
+            starting_letter = meal[0].lower()
+            integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
+            data_to_insert.append((integer_key, starting_letter, meal, meal_id))
+            existing_meal_names.add(meal)
+            existing_meal_ids.add(meal_id)
+
+    if data_to_insert:
+        cur.executemany("INSERT OR IGNORE INTO meal_names (Integer_Key, Starting_Letter, Meal_name) VALUES (?, ?, ?)", [(d[0], d[1], d[2]) for d in data_to_insert])
+        cur.executemany("INSERT OR IGNORE INTO meal_ids (Integer_Key, Starting_Letter, Meal_id) VALUES (?, ?, ?)", [(d[0], d[1], d[3]) for d in data_to_insert])
+
     conn.commit()
-
 
 def main():
     # meal_dict = get_meal_data()
