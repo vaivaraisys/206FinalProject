@@ -91,62 +91,26 @@ def set_up_integer_table(cur, conn, num_letter_tup):
 
 
 def set_up_meal_table(meal_dict, cur, conn, max_items=25):
-    # number_letter_tuples = generate_number_letter_tuples()
-    # cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='meal_names'")
-    # table_exists = cur.fetchone() is not None
-
-    # if not table_exists:
-    #     cur.execute(
-    #         "CREATE TABLE meal_names (Integer_Key INTEGER, Starting_Letter TEXT, Meal_name TEXT UNIQUE)"
-    #     )
-    #     cur.execute(
-    #         "CREATE TABLE meal_ids (Integer_Key INTEGER, Starting_Letter TEXT, Meal_id TEXT UNIQUE)"
-    #     )
-    #     conn.commit()
-
-    # cur.execute("SELECT COUNT(*) FROM meal_names")
-    # current_count = cur.fetchone()[0]
-
-    # cur.execute("SELECT Meal_name FROM meal_names")
-    # existing_meal_names = set(row[0] for row in cur.fetchall())
-
-    # cur.execute("SELECT Meal_id FROM meal_ids")
-    # existing_meal_ids = set(row[0] for row in cur.fetchall())
-
-    # num_to_insert = min(max_items, len(meal_dict) - current_count)
-
-    # data_to_insert = []
-    # for meal, meal_id in meal_dict[current_count:current_count + num_to_insert]:
-    #     if meal not in existing_meal_names and meal_id not in existing_meal_ids:
-    #         starting_letter = meal[0].lower()
-    #         integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
-    #         data_to_insert.append((integer_key, starting_letter, meal, meal_id))
-    #         existing_meal_names.add(meal)
-    #         existing_meal_ids.add(meal_id)
-
-    # if data_to_insert:
-    #     cur.executemany("INSERT OR IGNORE INTO meal_names (Integer_Key, Starting_Letter, Meal_name) VALUES (?, ?, ?)", [(d[0], d[1], d[2]) for d in data_to_insert])
-    #     cur.executemany("INSERT OR IGNORE INTO meal_ids (Integer_Key, Starting_Letter, Meal_id) VALUES (?, ?, ?)", [(d[0], d[1], d[3]) for d in data_to_insert])
-
-    # conn.commit()
     number_letter_tuples = generate_number_letter_tuples()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='meals'")
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='meal_names'")
     table_exists = cur.fetchone() is not None
 
     if not table_exists:
         cur.execute(
-            "CREATE TABLE meals (Integer_Key INTEGER, Meal_name TEXT UNIQUE, Meal_id TEXT UNIQUE)"
+            "CREATE TABLE meal_names (Integer_Key INTEGER, Starting_Letter TEXT, Meal_name TEXT UNIQUE)"
         )
-   
+        cur.execute(
+            "CREATE TABLE meal_ids (Integer_Key INTEGER, Starting_Letter TEXT, Meal_id TEXT UNIQUE)"
+        )
         conn.commit()
 
-    cur.execute("SELECT COUNT(*) FROM meals")
+    cur.execute("SELECT COUNT(*) FROM meal_names")
     current_count = cur.fetchone()[0]
 
-    cur.execute("SELECT Meal_name FROM meals")
+    cur.execute("SELECT Meal_name FROM meal_names")
     existing_meal_names = set(row[0] for row in cur.fetchall())
 
-    cur.execute("SELECT Meal_id FROM meals")
+    cur.execute("SELECT Meal_id FROM meal_ids")
     existing_meal_ids = set(row[0] for row in cur.fetchall())
 
     num_to_insert = min(max_items, len(meal_dict) - current_count)
@@ -161,7 +125,9 @@ def set_up_meal_table(meal_dict, cur, conn, max_items=25):
             existing_meal_ids.add(meal_id)
 
     if data_to_insert:
-        cur.executemany("INSERT OR IGNORE INTO meals (Integer_Key, Meal_name, Meal_id) VALUES (?, ?, ?)", [(d[0], d[2], d[3]) for d in data_to_insert])
+        cur.executemany("INSERT OR IGNORE INTO meal_names (Integer_Key, Starting_Letter, Meal_name) VALUES (?, ?, ?)", [(d[0], d[1], d[2]) for d in data_to_insert])
+        cur.executemany("INSERT OR IGNORE INTO meal_ids (Integer_Key, Starting_Letter, Meal_id) VALUES (?, ?, ?)", [(d[0], d[1], d[3]) for d in data_to_insert])
+
     conn.commit()
 
 def main():

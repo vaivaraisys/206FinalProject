@@ -27,46 +27,12 @@ def retrieve_desserts():
         print("Invalid URL")
 
 def set_up_desserts_table(desserts_tuple, cur, conn, max_items=25):
-    # number_letter_tuples = generate_number_letter_tuples()
-    # cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='desserts'")
-    # table_exists = cur.fetchone() is not None
-    # if not table_exists:
-    #     cur.execute(
-    #         "CREATE TABLE desserts (Integer_Key INTEGER, Starting_Letter TEXT, Dessert_name TEXT UNIQUE)"
-    #     )
-    #     conn.commit()
-    # cur.execute("SELECT COUNT(*) FROM desserts")
-    # current_count = cur.fetchone()[0]
-    # cur.execute("SELECT Dessert_name FROM desserts")
-    
-    # # gets all of the meals currently in the table as a list of tuples
-    # existing_dessert_names = set(row[0] for row in cur.fetchall())
-    # # limits the number of items inserted doesn't exceed the maximum allowed (max items), and ensures that you don't try to insert more items than are desserts_tuple
-    # num_to_insert = min(max_items, len(desserts_tuple) - current_count)
-    # #data to be inserted into the database will be stored.
-    # data_to_insert = []
-    # #iterates over a chunk of data based on the current count 
-    # for dessert in desserts_tuple[current_count:current_count + num_to_insert]:
-    #       #checks to make sure there is no duplicated data in the existing data list we make and that the starting letter is valid
-    #     if dessert[0].lower() in string.ascii_lowercase:
-    #             starting_letter = dessert[0].lower()
-    #             integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
-    #              # if the data is not in the exisiting desserts list, we add it to the list for inserting 
-    #             data_to_insert.append((integer_key, starting_letter, dessert))
-    #             #after the data is inserted we add it to existing desserts list so it does not get duplicated
-    #             existing_dessert_names.add(dessert)
-    #     else:
-    #         print(f"Invalid starting letter: {dessert[0]}")
-
-    # if data_to_insert:
-    #     cur.executemany("INSERT OR IGNORE INTO desserts (Integer_Key, Starting_Letter, Dessert_name) VALUES (?, ?, ?)", [(d[0], d[1], d[2]) for d in data_to_insert])
-    # conn.commit()
     number_letter_tuples = generate_number_letter_tuples()
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='desserts'")
     table_exists = cur.fetchone() is not None
     if not table_exists:
         cur.execute(
-            "CREATE TABLE desserts (Integer_Key INTEGER, Dessert_name TEXT UNIQUE)"
+            "CREATE TABLE desserts (Integer_Key INTEGER, Starting_Letter TEXT, Dessert_name TEXT UNIQUE)"
         )
         conn.commit()
     cur.execute("SELECT COUNT(*) FROM desserts")
@@ -81,13 +47,19 @@ def set_up_desserts_table(desserts_tuple, cur, conn, max_items=25):
     data_to_insert = []
     #iterates over a chunk of data based on the current count 
     for dessert in desserts_tuple[current_count:current_count + num_to_insert]:
-          # if the data is not in the existing desserts list, we add it to the list for inserting 
-        if dessert.lower() not in existing_dessert_names:
-            data_to_insert.append((number_letter_tuples[current_count][0], dessert))
-            existing_dessert_names.add(dessert.lower())
+          #checks to make sure there is no duplicated data in the existing data list we make and that the starting letter is valid
+        if dessert[0].lower() in string.ascii_lowercase:
+                starting_letter = dessert[0].lower()
+                integer_key = number_letter_tuples[ord(starting_letter) - ord('a')][0]
+                 # if the data is not in the exisiting desserts list, we add it to the list for inserting 
+                data_to_insert.append((integer_key, starting_letter, dessert))
+                #after the data is inserted we add it to existing desserts list so it does not get duplicated
+                existing_dessert_names.add(dessert)
+        else:
+            print(f"Invalid starting letter: {dessert[0]}")
 
     if data_to_insert:
-        cur.executemany("INSERT OR IGNORE INTO desserts (Integer_Key, Dessert_name) VALUES (?, ?)", data_to_insert)
+        cur.executemany("INSERT OR IGNORE INTO desserts (Integer_Key, Starting_Letter, Dessert_name) VALUES (?, ?, ?)", [(d[0], d[1], d[2]) for d in data_to_insert])
     conn.commit()
 
 def main():
