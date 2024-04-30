@@ -50,9 +50,8 @@ def get_meal_data():
     # return (response_dict, name_id_list, url)
 
 def generate_number_letter_tuples():
-    # Create a list of tuples containing numbers and corresponding letters
     number_letter_tuples = [(i, chr(i + 96)) for i in range(1, 27)]
-    # print(number_letter_tuples)
+    print(number_letter_tuples)
     return number_letter_tuples
 
 # Sets up the data base 

@@ -104,7 +104,7 @@ def set_up_drink_table(drink_dict, cur, conn, max_items=25):
 
 def main():
     drink_dict = get_drink_data()
-    generate_number_letter_tuples()
+    # generate_number_letter_tuples()
     cur, conn = set_up_database("food_data.db")
     set_up_drink_table(drink_dict, cur, conn, max_items=25)
 

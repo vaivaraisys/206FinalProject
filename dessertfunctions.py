@@ -64,7 +64,7 @@ def set_up_desserts_table(desserts_tuple, cur, conn, max_items=25):
 
 def main():
     desserts_list = retrieve_desserts()
-    generate_number_letter_tuples()
+    # generate_number_letter_tuples()
     cur, conn = set_up_database("food_data.db")
     set_up_desserts_table(desserts_list, cur, conn, max_items=25)
 
